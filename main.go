@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -19,8 +20,10 @@ type point struct {
 // make a request to the nfw api and return the result
 func netNFW(x float64, y float64, z float64) float64 {
 
+	var nfwurl = os.Getenv("nfwurl")
+
 	// build the request string
-	var randMinRequestURL string = fmt.Sprintf("http://nfw.docker.localhost/NFW?x=%f&y=%f&z=%f", x, y, z)
+	var randMinRequestURL string = fmt.Sprintf("http://%s/NFW?x=%f&y=%f&z=%f", nfwurl, x, y, z)
 
 	// make the request
 	resp, err := http.Get(randMinRequestURL)
