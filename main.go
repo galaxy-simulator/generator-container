@@ -18,9 +18,13 @@ type point struct {
 }
 
 // make a request to the nfw api and return the result
-func netNFW(x float64, y float64, z float64) float64 {
+func netNFW(x float64, y float64, z float64) (float64, error) {
 
 	var nfwurl = os.Getenv("nfwurl")
+	if nfwurl == "" {
+		log.Println("no nfwurl given! set one using the nfwurl environment variable!")
+		return -1, nil
+	}
 
 	// build the request string
 	var randMinRequestURL string = fmt.Sprintf("http://%s/NFW?x=%f&y=%f&z=%f", nfwurl, x, y, z)
@@ -49,7 +53,7 @@ func netNFW(x float64, y float64, z float64) float64 {
 
 	result := dat["NFW"].(float64)
 
-	return result
+	return result, nil
 }
 
 func gen(galaxyRange float64) point {
@@ -61,15 +65,23 @@ func gen(galaxyRange float64) point {
 	var rangeMin float64 = -length
 	var rangeMax float64 = length
 
-	var randMin float64 = netNFW(0, 0, 0)
-	fmt.Printf("randmin: %30.20f", randMin)
-	var randMax float64 = netNFW(length, length, length)
-	fmt.Printf("randmax: %30.20f", randMax)
+	// get the minimal NFW value
+	var randMin, errGetMinValue = netNFW(0, 0, 0)
+	if errGetMinValue != nil {
+		panic(errGetMinValue)
+	}
+
+	// get the maximal NFW value
+	var randMax, errGetMaxValue = netNFW(length, length, length)
+	if errGetMaxValue != nil {
+		panic(errGetMaxValue)
+	}
 
 	var starFound bool = false
 
 	for starFound == false {
 
+		// define a new random source (without this, the numbers would not be random!)
 		randomSource := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 		// generate random coordinates
@@ -77,16 +89,26 @@ func gen(galaxyRange float64) point {
 		var y float64 = ((rangeMax - rangeMin) * randomSource.Float64()) + rangeMin
 		var z float64 = ((rangeMax - rangeMin) * randomSource.Float64()) + rangeMin
 
+		// generate a random value in the (randmin, randmax) range
 		var randomValue = randomSource.Float64()
 		var randVal = ((randMax - randMin) * randomValue) + randMin
 
-		if randVal < netNFW(x, y, z) {
-			var newStar point = point{x, y, z}
+		// calculate the nfw-value of the previously generated star
+		var nfwVal, err = netNFW(x, y, z)
+		if err != nil {
+			panic(err)
+		}
 
+		// check if th star should be kept or not
+		if randVal < nfwVal {
+			var newStar point = point{x, y, z}
 			starFound = true
 			return newStar
 		}
 	}
+
+	// if no star is found at all, return (0, 0, 0)
+	// this code should actually never be reached
 	return point{0, 0, 0}
 }
 
@@ -108,8 +130,13 @@ func generate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	_, _ = fmt.Fprintf(w, "Generator container here!\nUse the /gen endpoint to generator a star!")
+}
+
 func main() {
 	router := mux.NewRouter()
+	router.HandleFunc("/", indexHandler).Methods("GET")
 	router.HandleFunc("/gen", generate).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8123", router))
 }

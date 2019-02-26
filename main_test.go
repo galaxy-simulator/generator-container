@@ -45,7 +45,7 @@ func Test_netNFW(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := netNFW(tt.args.x, tt.args.y, tt.args.z); got != tt.want {
+			if got, _ := netNFW(tt.args.x, tt.args.y, tt.args.z); got != tt.want {
 				t.Errorf("netNFW() = %v, want %v", got, tt.want)
 			}
 		})
