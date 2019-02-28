@@ -136,7 +136,7 @@ func generateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	_, _ = fmt.Fprintf(w, "Generator container here!\nUse the /gen endpoint to generator a star!")
+	_, _ = fmt.Fprintf(w, "Generator container here!\nUse the /gen?num=<num>&range=<range> endpoint to generator a star!")
 }
 
 func main() {
