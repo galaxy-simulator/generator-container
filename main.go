@@ -112,7 +112,7 @@ func gen(galaxyRange float64) point {
 	return point{0, 0, 0}
 }
 
-func generate(w http.ResponseWriter, r *http.Request) {
+func generateHandler(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 
 	amount, _ := strconv.ParseInt(params.Get("num"), 10, 64)
@@ -137,6 +137,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", indexHandler).Methods("GET")
-	router.HandleFunc("/gen", generate).Methods("GET")
+	router.HandleFunc("/gen", generateHandler).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8123", router))
 }
