@@ -112,15 +112,21 @@ func gen(galaxyRange float64) point {
 	return point{0, 0, 0}
 }
 
+// the generate handler gets a number of stars and a range in which the stars should be generated
+// and generated them
 func generateHandler(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 
+	// parse the url arguments
 	amount, _ := strconv.ParseInt(params.Get("num"), 10, 64)
 	galaxyRange, _ := strconv.ParseFloat(params.Get("range"), 64)
 
 	// generate the given amount of stars
 	for i := 0; i < int(amount); i++ {
+
+		// generate the star
 		result := gen(galaxyRange)
+
 		log.Printf("galaxy range: %f", galaxyRange)
 		log.Printf("%v\n", result)
 		_, err := fmt.Fprintf(w, "%f, %f, %f\n", result.x, result.y, result.z)
