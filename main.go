@@ -20,10 +20,12 @@ type point struct {
 // make a request to the nfw api and return the result
 func netNFW(x float64, y float64, z float64) (float64, error) {
 
+	// get the url of the nfw container or a reverse proxy handling the request to the containers
 	var nfwurl = os.Getenv("nfwurl")
+
+	// if no url is given, ask
 	if nfwurl == "" {
-		log.Println("no nfwurl given! set one using the nfwurl environment variable!")
-		return -1, nil
+		return 0, fmt.Errorf("No nfwurl given!")
 	}
 
 	// build the request string
@@ -31,12 +33,10 @@ func netNFW(x float64, y float64, z float64) (float64, error) {
 
 	// make the request
 	resp, err := http.Get(randMinRequestURL)
+	defer resp.Body.Close()
 	if err != nil {
 		panic(err)
 	}
-
-	// close the request body when finished
-	defer resp.Body.Close()
 
 	// read the body
 	body, bodyerr := ioutil.ReadAll(resp.Body)
@@ -44,8 +44,8 @@ func netNFW(x float64, y float64, z float64) (float64, error) {
 		panic(bodyerr)
 	}
 
+	// define an interface into which the nfw gets unpacked
 	var dat map[string]interface{}
-
 	jsonerr := json.Unmarshal(body, &dat)
 	if jsonerr != nil {
 		panic(jsonerr)
