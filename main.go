@@ -129,10 +129,9 @@ func generateHandler(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("galaxy range: %f", galaxyRange)
 		log.Printf("%v\n", result)
-		_, err := fmt.Fprintf(w, "%f, %f, %f\n", result.x, result.y, result.z)
-		if err != nil {
-			panic(err)
-		}
+
+		log.SetOutput(w)
+		log.Printf("%f, %f, %f\n", result.x, result.y, result.z)
 	}
 }
 
